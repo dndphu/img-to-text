@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <h1>Image => Text </h1>
+    <h1>Image => Text</h1>
     <div class="container-btn">
       <input
         ref="inputImg"
@@ -86,6 +86,12 @@ export default {
       console.log(text);
       this.resultText = text;
     },
+  },
+  created() {
+    console.log(
+      "%cStop!",
+      "color: red; font-family: sans-serif; font-size: 4.5em; font-weight: bolder; text-shadow: #000 1px 1px;"
+    );
   },
 };
 </script>
