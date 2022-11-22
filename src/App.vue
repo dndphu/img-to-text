@@ -39,7 +39,7 @@
 /* eslint-disable */
 import { createWorker, PSM, OEM } from "tesseract.js";
 const worker = createWorker({
-  logger: (m) => console.log(m),
+  // logger: (m) => console.log(m),
 });
 
 export default {
@@ -55,9 +55,12 @@ export default {
   methods: {
     upLoadFile(e) {
       //funtion to upload image into delfau titles
-      this.error = "";
       if (!e.target.files[0]) return;
-      this.urlImg = URL.createObjectURL(e.target.files[0]);
+      this.getUrl(e.target.files[0]);
+    },
+    getUrl(link) {
+      this.error = "";
+      this.urlImg = URL.createObjectURL(link);
     },
     onClear() {
       this.urlImg = "";
@@ -83,7 +86,7 @@ export default {
       } = await worker.recognize(img);
 
       this.isLoading = false;
-      console.log(text);
+      // console.log(text);
       this.resultText = text;
     },
   },
@@ -92,6 +95,12 @@ export default {
       "%cStop!",
       "color: red; font-family: sans-serif; font-size: 4.5em; font-weight: bolder; text-shadow: #000 1px 1px;"
     );
+  },
+  mounted() {
+    window.addEventListener("paste", (e) => {
+      this.$refs.inputImg.files = e.clipboardData.files;
+      this.getUrl(e.clipboardData.files[0]);
+    });
   },
 };
 </script>
