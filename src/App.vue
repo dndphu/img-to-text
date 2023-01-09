@@ -2,24 +2,14 @@
   <div id="app">
     <h1>Image => Text</h1>
     <div class="container-btn">
-      <input
-        ref="inputImg"
-        @change="upLoadFile"
-        type="file"
-        class="default-file-input"
-      />
+      <input ref="inputImg" @change="upLoadFile" type="file" class="default-file-input" />
       <button @click="recognize">Recognize</button>
       <button @click="onClear">Clear</button>
     </div>
     <p v-if="error" style="color: red">{{ error }}</p>
     <div>
-      <h2>Images upload</h2>
-      <img
-        id="output"
-        ref="imgOutput"
-        :src="urlImg"
-        style="max-width: 500px; max-height: 400px"
-      />
+      <h2> upload or paste image</h2>
+      <img id="output" ref="imgOutput" :src="urlImg" style="max-width: 500px; max-height: 400px" />
     </div>
 
     <div>
@@ -32,6 +22,21 @@
           </code>
         </pre>
     </div>
+    <div v-if="resultText">
+      <button @click="onTranslate">translate</button>
+      <div>
+        <pre class="container-code">
+          <div class="loading">
+            <div v-if="isTranslating" class="loading__style"></div>
+          </div>
+          <code v-if="!isTranslating">
+           <p v-for="(v, k) in viText" :key="k">
+            {{ v.translatedText }}
+          </p>
+          </code>
+        </pre>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -42,14 +47,18 @@ const worker = createWorker({
   // logger: (m) => console.log(m),
 });
 
+import axios from "axios";
+
 export default {
   name: "app",
   data() {
     return {
       urlImg: "",
       resultText: "",
+      viText: "",
       error: "",
       isLoading: false,
+      isTranslating: false
     };
   },
   methods: {
@@ -89,10 +98,35 @@ export default {
       // console.log(text);
       this.resultText = text;
     },
+    onTranslate() {
+      const params = {
+        q: this.resultText,
+        target: 'vi',
+        source: "en",
+        key: "AIzaSyCccZpMMxiVjtZL2N6IntfJ0crFsxpmIow"
+      }
+      const options = {
+        method: 'POST',
+        url: 'https://translation.googleapis.com/language/translate/v2',
+        params
+      };
+
+      this.isTranslating = true
+      let self = this
+      axios.request(options).then(function (response) {
+        self.isTranslating = false
+        self.viText = response.data.data.translations
+      }).catch(function (error) {
+        console.error(error);
+        self.viText = ""
+        self.isTranslating = false
+      });
+
+    }
   },
   created() {
     console.log(
-      "%cStop!",
+      "%cStop!, u are chicken",
       "color: red; font-family: sans-serif; font-size: 4.5em; font-weight: bolder; text-shadow: #000 1px 1px;"
     );
   },
@@ -114,21 +148,26 @@ export default {
   color: #2c3e50;
   margin-top: 60px;
 }
+
 .container-btn {
   display: flex;
   justify-content: center;
   margin-top: 20px;
 }
-button + button {
+
+button+button {
   margin-left: 5px;
 }
+
 .container-code {
   background-color: #f8f8f8;
 }
+
 .loading {
   display: flex;
   justify-content: center;
 }
+
 .loading__style {
   --w: 10ch;
   font-weight: bold;
@@ -142,6 +181,7 @@ button + button {
   color: #0000;
   animation: c9 2s infinite linear;
 }
+
 .loading__style:before {
   content: "Loading...";
 }
@@ -153,36 +193,42 @@ button + button {
       calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0, calc(-7 * var(--w)) 0,
       calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
   }
+
   4% {
     text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0,
       calc(-2 * var(--w)) 0, calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0,
       calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0, calc(-7 * var(--w)) 0,
       calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
   }
+
   8% {
     text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000,
       calc(-2 * var(--w)) 0, calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0,
       calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0, calc(-7 * var(--w)) 0,
       calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
   }
+
   12% {
     text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000,
       calc(-2 * var(--w)) 0 #000, calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0,
       calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0, calc(-7 * var(--w)) 0,
       calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
   }
+
   16% {
     text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000,
       calc(-2 * var(--w)) 0 #000, calc(-3 * var(--w)) 0 #000,
       calc(-4 * var(--w)) 0, calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0,
       calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
   }
+
   20% {
     text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000,
       calc(-2 * var(--w)) 0 #000, calc(-3 * var(--w)) 0 #000,
       calc(-4 * var(--w)) 0 #000, calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0,
       calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
   }
+
   24% {
     text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000,
       calc(-2 * var(--w)) 0 #000, calc(-3 * var(--w)) 0 #000,
@@ -190,6 +236,7 @@ button + button {
       calc(-6 * var(--w)) 0, calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0,
       calc(-9 * var(--w)) 0;
   }
+
   28% {
     text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000,
       calc(-2 * var(--w)) 0 #000, calc(-3 * var(--w)) 0 #000,
@@ -197,6 +244,7 @@ button + button {
       calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0, calc(-8 * var(--w)) 0,
       calc(-9 * var(--w)) 0;
   }
+
   32% {
     text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000,
       calc(-2 * var(--w)) 0 #000, calc(-3 * var(--w)) 0 #000,
@@ -204,6 +252,7 @@ button + button {
       calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000,
       calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0;
   }
+
   36% {
     text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000,
       calc(-2 * var(--w)) 0 #000, calc(-3 * var(--w)) 0 #000,
@@ -211,6 +260,7 @@ button + button {
       calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000,
       calc(-8 * var(--w)) 0 #000, calc(-9 * var(--w)) 0;
   }
+
   40%,
   60% {
     text-shadow: calc(0 * var(--w)) 0 #000, calc(-1 * var(--w)) 0 #000,
@@ -219,6 +269,7 @@ button + button {
       calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000,
       calc(-8 * var(--w)) 0 #000, calc(-9 * var(--w)) 0 #000;
   }
+
   64% {
     text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0 #000,
       calc(-2 * var(--w)) 0 #000, calc(-3 * var(--w)) 0 #000,
@@ -226,6 +277,7 @@ button + button {
       calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000,
       calc(-8 * var(--w)) 0 #000, calc(-9 * var(--w)) 0 #000;
   }
+
   68% {
     text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0,
       calc(-2 * var(--w)) 0 #000, calc(-3 * var(--w)) 0 #000,
@@ -233,6 +285,7 @@ button + button {
       calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000,
       calc(-8 * var(--w)) 0 #000, calc(-9 * var(--w)) 0 #000;
   }
+
   72% {
     text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0,
       calc(-2 * var(--w)) 0, calc(-3 * var(--w)) 0 #000,
@@ -240,6 +293,7 @@ button + button {
       calc(-6 * var(--w)) 0 #000, calc(-7 * var(--w)) 0 #000,
       calc(-8 * var(--w)) 0 #000, calc(-9 * var(--w)) 0 #000;
   }
+
   76% {
     text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0,
       calc(-2 * var(--w)) 0, calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0 #000,
@@ -247,6 +301,7 @@ button + button {
       calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000,
       calc(-9 * var(--w)) 0 #000;
   }
+
   80% {
     text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0,
       calc(-2 * var(--w)) 0, calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0,
@@ -254,6 +309,7 @@ button + button {
       calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000,
       calc(-9 * var(--w)) 0 #000;
   }
+
   84% {
     text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0,
       calc(-2 * var(--w)) 0, calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0,
@@ -261,24 +317,28 @@ button + button {
       calc(-7 * var(--w)) 0 #000, calc(-8 * var(--w)) 0 #000,
       calc(-9 * var(--w)) 0 #000;
   }
+
   88% {
     text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0,
       calc(-2 * var(--w)) 0, calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0,
       calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0, calc(-7 * var(--w)) 0 #000,
       calc(-8 * var(--w)) 0 #000, calc(-9 * var(--w)) 0 #000;
   }
+
   92% {
     text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0,
       calc(-2 * var(--w)) 0, calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0,
       calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0, calc(-7 * var(--w)) 0,
       calc(-8 * var(--w)) 0 #000, calc(-9 * var(--w)) 0 #000;
   }
+
   96% {
     text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0,
       calc(-2 * var(--w)) 0, calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0,
       calc(-5 * var(--w)) 0, calc(-6 * var(--w)) 0, calc(-7 * var(--w)) 0,
       calc(-8 * var(--w)) 0, calc(-9 * var(--w)) 0 #000;
   }
+
   100% {
     text-shadow: calc(0 * var(--w)) 0, calc(-1 * var(--w)) 0,
       calc(-2 * var(--w)) 0, calc(-3 * var(--w)) 0, calc(-4 * var(--w)) 0,
