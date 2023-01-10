@@ -2,9 +2,9 @@
   <div id="app">
     <h1>Image => Text</h1>
     <div class="container-btn">
-      <input ref="inputImg" @change="upLoadFile" type="file" class="default-file-input" />
-      <button @click="recognize">Recognize</button>
-      <button @click="onClear">Clear</button>
+      <input :disabled="isLoading" ref="inputImg" @change="upLoadFile" type="file" class="default-file-input" />
+      <button :disabled="isLoading" @click="onRecognize">Recognize</button>
+      <button :disabled="isLoading" @click="onClear">Clear</button>
     </div>
     <p v-if="error" style="color: red">{{ error }}</p>
     <div>
@@ -17,7 +17,7 @@
           <div class="loading">
             <div v-if="isLoading" class="loading__style"></div>
           </div>
-          <code v-if="!isLoading">
+          <code v-if="!isLoading" class="container-code__text">
             {{ resultText }}
           </code>
         </pre>
@@ -30,9 +30,9 @@
             <div v-if="isTranslating" class="loading__style"></div>
           </div>
           <code v-if="!isTranslating">
-           <p v-for="(v, k) in viText" :key="k">
+           <div v-for="(v, k) in viText" :key="k" class="container-code__text">
             {{ v.translatedText }}
-          </p>
+          </div>
           </code>
         </pre>
       </div>
@@ -77,7 +77,7 @@ export default {
       this.error = "";
       this.$refs.inputImg.value = "";
     },
-    async recognize() {
+    async onRecognize() {
       const img = this.$refs.imgOutput; // document.getElementById("output");
       if (!this.urlImg) {
         this.error = "Input Image";
@@ -161,6 +161,12 @@ button+button {
 
 .container-code {
   background-color: #f8f8f8;
+}
+.container-code__text{
+  max-width: 60vw;
+  margin: auto;
+  white-space: break-spaces;
+  font-size: 18px;
 }
 
 .loading {
