@@ -1,17 +1,21 @@
 <template>
   <div id="app">
-    <h1>Image => Text</h1>
+    <h1>Upload or paste image</h1>
     <div class="container-btn">
-      <input :disabled="isLoading" ref="inputImg" @change="upLoadFile" type="file" class="default-file-input" />
+      <input
+        :disabled="isLoading"
+        ref="inputImg"
+        @change="upLoadFile"
+        type="file"
+        class="default-file-input"
+      />
       <button :disabled="isLoading" @click="onRecognize">Recognize</button>
       <button :disabled="isLoading" @click="onClear">Clear</button>
     </div>
-    <p v-if="error" style="color: red">{{ error }}</p>
-    <div>
-      <h2> upload or paste image</h2>
-      <img id="output" ref="imgOutput" :src="urlImg" style="max-width: 500px; max-height: 400px" />
+    <p v-if="error" class="error">{{ error }}</p>
+    <div class="img-upload">
+      <img id="output" ref="imgOutput" :src="urlImg" />
     </div>
-
     <div>
       <pre class="container-code">
           <div class="loading">
@@ -23,6 +27,7 @@
         </pre>
     </div>
     <div v-if="resultText">
+      <button @click="onCopyText">copy</button>
       <button @click="onTranslate">translate</button>
       <div>
         <pre class="container-code">
@@ -30,8 +35,8 @@
             <div v-if="isTranslating" class="loading__style"></div>
           </div>
           <code v-if="!isTranslating">
-           <div v-for="(v, k) in viText" :key="k" class="container-code__text">
-            {{ v.translatedText }}
+           <div class="container-code__text">
+            {{ viText }}
           </div>
           </code>
         </pre>
@@ -58,7 +63,7 @@ export default {
       viText: "",
       error: "",
       isLoading: false,
-      isTranslating: false
+      isTranslating: false,
     };
   },
   methods: {
@@ -76,6 +81,7 @@ export default {
       this.resultText = "";
       this.error = "";
       this.$refs.inputImg.value = "";
+      this.viText = "";
     },
     async onRecognize() {
       const img = this.$refs.imgOutput; // document.getElementById("output");
@@ -95,34 +101,42 @@ export default {
       } = await worker.recognize(img);
 
       this.isLoading = false;
-      // console.log(text);
       this.resultText = text;
     },
-    onTranslate() {
-      const params = {
-        q: this.resultText,
-        target: 'vi',
-        source: "en",
-        key: "AIzaSyCccZpMMxiVjtZL2N6IntfJ0crFsxpmIow"
-      }
+    async onTranslate() {
+      const encodedParams = new URLSearchParams();
+      encodedParams.set("source_language", "en");
+      encodedParams.set("target_language", "vi");
+      encodedParams.set("text", this.resultText);
+
       const options = {
-        method: 'POST',
-        url: 'https://translation.googleapis.com/language/translate/v2',
-        params
+        method: "POST",
+        url: "https://text-translator2.p.rapidapi.com/translate",
+        headers: {
+          "content-type": "application/x-www-form-urlencoded",
+          "X-RapidAPI-Key":
+            "de56ddd1a0msh907cb13aa9b0659p180618jsn76131942316e",
+          "X-RapidAPI-Host": "text-translator2.p.rapidapi.com",
+        },
+        data: encodedParams,
       };
 
-      this.isTranslating = true
-      let self = this
-      axios.request(options).then(function (response) {
-        self.isTranslating = false
-        self.viText = response.data.data.translations
-      }).catch(function (error) {
+      try {
+        this.isTranslating = true;
+        const response = await axios.request(options);
+        // console.log(response.data);
+        this.viText = response.data.data.translatedText || "";
+      } catch (error) {
         console.error(error);
-        self.viText = ""
-        self.isTranslating = false
-      });
-
-    }
+        this.viText = "";
+      } finally {
+        this.isTranslating = false;
+      }
+    },
+    onCopyText() {
+      if (!this.resultText) return;
+      navigator.clipboard.writeText(this.resultText);
+    },
   },
   created() {
     console.log(
@@ -146,7 +160,6 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 
 .container-btn {
@@ -155,20 +168,28 @@ export default {
   margin-top: 20px;
 }
 
-button+button {
+button + button {
   margin-left: 5px;
 }
-
+.img-upload {
+  margin: 20px 0;
+}
+.img-upload img {
+  max-width: 500px;
+  max-height: 400px;
+}
 .container-code {
   background-color: #f8f8f8;
 }
-.container-code__text{
+.container-code__text {
   max-width: 60vw;
   margin: auto;
   white-space: break-spaces;
   font-size: 18px;
 }
-
+.error {
+  color: red;
+}
 .loading {
   display: flex;
   justify-content: center;
