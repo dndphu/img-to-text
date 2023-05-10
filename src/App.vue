@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <h1>Upload or paste image</h1>
+    <h1 @dblclick="onChangeLang(lang)">Upload or paste image <span v-if="lang=='vie'">(lấy text Tiếng Việt)</span></h1>
     <div class="container-btn">
       <input
         :disabled="isLoading"
@@ -16,7 +16,7 @@
     <div class="img-upload">
       <img id="output" ref="imgOutput" :src="urlImg" />
     </div>
-    <div>
+    <div v-show="urlImg">
       <pre class="container-code">
           <div class="loading">
             <div v-if="isLoading" class="loading__style"></div>
@@ -28,7 +28,7 @@
     </div>
     <div v-if="resultText">
       <button @click="onCopyText">copy</button>
-      <button @click="onTranslate">translate</button>
+      <button v-if="lang !== 'vie'" @click="onTranslate">translate</button>
       <div>
         <pre class="container-code">
           <div class="loading">
@@ -64,9 +64,20 @@ export default {
       error: "",
       isLoading: false,
       isTranslating: false,
+      lang: 'eng' //vie
     };
   },
   methods: {
+    onChangeLang(lang){
+      if (!lang) return
+      // const arr = ["eng",'vie']
+      // this.lang= arr.find(el => el !== lang)
+      const obj = {
+        "eng": "vie",
+        "vie": 'eng'
+      }
+      this.lang=obj[lang]
+    },
     upLoadFile(e) {
       //funtion to upload image into delfau titles
       if (!e.target.files[0]) return;
@@ -80,8 +91,8 @@ export default {
       this.urlImg = "";
       this.resultText = "";
       this.error = "";
-      this.$refs.inputImg.value = "";
       this.viText = "";
+      this.$refs.inputImg.value = "";
     },
     async onRecognize() {
       const img = this.$refs.imgOutput; // document.getElementById("output");
@@ -91,8 +102,8 @@ export default {
       }
       this.isLoading = true;
       await worker.load();
-      await worker.loadLanguage("eng");
-      await worker.initialize("eng", OEM.LSTM_ONLY);
+      await worker.loadLanguage(this.lang);
+      await worker.initialize(this.lang, OEM.LSTM_ONLY);
       await worker.setParameters({
         tessedit_pageseg_mode: PSM.SINGLE_BLOCK,
       });
@@ -102,6 +113,7 @@ export default {
 
       this.isLoading = false;
       this.resultText = text;
+      console.log('this.resultText :>> ', this.resultText);
     },
     async onTranslate() {
       const encodedParams = new URLSearchParams();
