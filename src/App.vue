@@ -113,7 +113,6 @@ export default {
 
       this.isLoading = false;
       this.resultText = text;
-      console.log('this.resultText :>> ', this.resultText);
     },
     async onTranslate() {
       const encodedParams = new URLSearchParams();
@@ -152,7 +151,7 @@ export default {
   },
   created() {
     console.log(
-      "%cStop!, u are chicken",
+      "%cStop!",
       "color: red; font-family: sans-serif; font-size: 4.5em; font-weight: bolder; text-shadow: #000 1px 1px;"
     );
   },
